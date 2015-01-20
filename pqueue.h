@@ -1,8 +1,7 @@
 #ifndef PQUEUE_H
 #define	PQUEUE_H
 
-typedef int pqpt;/* datový typ priority */
-typedef int pqdt;/* datový typ dat */
+typedef binary_node pqdt;/* datový typ dat */
 
 typedef struct {
   int top;
