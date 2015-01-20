@@ -75,7 +75,7 @@ int pqueue_push(pqueue *pq, pqdt data) {
     return 0;
 }
 
-/* odebere prvek s nejvyšší prioritou, případně překopíruje prvku na pointer */
+/* odebere prvek s nejvyšší prioritou, případně překopíruje prvek na pointer */
 int pqueue_pop(pqueue *pq, pqdt *item) {
 
     if (pq != NULL && pq->top >= 0) {
