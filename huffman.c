@@ -96,6 +96,10 @@ binary_node *build_huffman_tree(unsigned char *freqs) {
     pqueue *pq = pqueue_create(CHAR_COUNT / 4, (int (*)(const void *, const void *))&binary_node_comp);
     binary_node *a, *b;
     
+    if(pq == NULL) {
+        /* todo došla paměť */
+    }
+    
     /*naplnění fronty*/
     for (i = 0; i < CHAR_COUNT; i++) {
         if(freqs[i] != 0) {
