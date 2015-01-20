@@ -52,8 +52,8 @@ void destroy_binary_tree(binary_node **root) {
     if(root != NULL) {
         
         if(*root != NULL) {
-            destroy_binary_tree((*root)->left);
-            destroy_binary_tree((*root)->right);
+            destroy_binary_tree(&((*root)->left));
+            destroy_binary_tree(&((*root)->right));
         }
         
         bindary_node_free(root);

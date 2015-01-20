@@ -55,7 +55,7 @@ int pqueue_push(pqueue *pq, pqdt *item) {
         if (pq->top + 1 >= pq->size) {
 
             int new_size = pq->size * 2;
-            char* more_data = (pqdt*) realloc(pq->data, new_size * sizeof (pqdt));
+            pqdt *more_data = (pqdt*) realloc(pq->data, new_size * sizeof (pqdt));
 
             if (more_data != NULL) {
                 pq->size = new_size;
@@ -67,7 +67,7 @@ int pqueue_push(pqueue *pq, pqdt *item) {
         pq->top++;
 
         /* vložení nového prvku na poslední pozici úložiště */
-        pq->data[pq->top] = item;
+        pq->data[pq->top] = *item;
 
         return 1;
     }
@@ -80,11 +80,12 @@ int pqueue_pop(pqueue *pq, pqdt *item) {
 
     if (pq != NULL && pq->top >= 0) {
         
-        pqdt *max;
-
+        pqdt *max = pq->data;
+        int i;
+        
         /* nalezení prvku s nejvyšší prioritou */
         for(i = 1; i <= pq->top; i++) {
-            if(pq->comp(max, pq->data + i) < 0) {
+            if(pq->comp(pq->data + i, max) < 0) {
                 max = pq->data + i;
             }
         }

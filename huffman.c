@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
+#include <math.h>
 
 #include "pqueue.h"
 #include "binary_tree.h"
@@ -92,7 +93,7 @@ int load_freqs(FILE* file, unsigned char *freqs) {
 binary_node *build_huffman_tree(unsigned char *freqs) {
     
     int i;
-    pqueue *pq = pqueue_create(CHAR_COUNT / 4);
+    pqueue *pq = pqueue_create(CHAR_COUNT / 4, (int (*)(const void *, const void *))&binary_node_comp);
     binary_node *a, *b;
     
     /*naplnění fronty*/
@@ -174,7 +175,7 @@ int main(int argc, char **argv) {
         }
     }
     
-    binary_node *tree = build_huffman_tree();
+    binary_node *tree = build_huffman_tree(freqs);
     
     
     

@@ -1,6 +1,8 @@
 #ifndef PQUEUE_H
 #define	PQUEUE_H
 
+#include "binary_tree.h"
+
 typedef binary_node pqdt;/* datový typ dat */
 
 typedef struct {
