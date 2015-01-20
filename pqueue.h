@@ -10,12 +10,12 @@ typedef struct {
   pqdt *data;
 } pqueue;
 
-pqueue* pqueue_create(int size);
+pqueue* pqueue_create(int size, int (*comp)(const void*, const void *));
 
-void pqueue_free(pqueue **s);
+void pqueue_free(pqueue **pq);
 
-int pqueue_push(pqueue *pq, pqpt *priority, pqdt *data);
+int pqueue_push(pqueue *pq, pqdt data);
 
-int pqueue_pop(pqueue *pq, pqpt *priority, pqdt *data);
+int pqueue_pop(pqueue *pq, pqdt *item);
 
 #endif
