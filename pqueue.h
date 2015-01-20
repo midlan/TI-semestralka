@@ -14,7 +14,7 @@ pqueue* pqueue_create(int size, int (*comp)(const void*, const void *));
 
 void pqueue_free(pqueue **pq);
 
-int pqueue_push(pqueue *pq, pqdt data);
+int pqueue_push(pqueue *pq, pqdt *item);
 
 int pqueue_pop(pqueue *pq, pqdt *item);
 

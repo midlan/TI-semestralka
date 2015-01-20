@@ -47,9 +47,9 @@ void pqueue_free(pqueue **pq) {
 }
 
 /* přidá prvek do prioritní fronty */
-int pqueue_push(pqueue *pq, pqdt data) {
+int pqueue_push(pqueue *pq, pqdt *item) {
 
-    if (pq != NULL && data != NULL) {
+    if (pq != NULL && item != NULL) {
 
         /* zkontrolovat jestli nedošlo místo a případně zdvojnásobit úložiště */
         if (pq->top + 1 >= pq->size) {
@@ -67,7 +67,7 @@ int pqueue_push(pqueue *pq, pqdt data) {
         pq->top++;
 
         /* vložení nového prvku na poslední pozici úložiště */
-        pq->data[pq->top] = data;
+        pq->data[pq->top] = item;
 
         return 1;
     }
