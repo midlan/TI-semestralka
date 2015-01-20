@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "pqueue.h"
+#include "binary_tree.h"
 
 #define CHAR_COUNT CHAR_BIT * CHAR_BIT
 
@@ -88,17 +89,38 @@ int load_freqs(FILE* file, unsigned char *freqs) {
     return rtn;
 }
 
-binary_node* build_huffman_tree(unsigned char *freqs) {
+binary_node *build_huffman_tree(unsigned char *freqs) {
     
     int i;
     pqueue *pq = pqueue_create(CHAR_COUNT / 4);
+    binary_node *a, *b;
     
     /*naplnění fronty*/
     for (i = 0; i < CHAR_COUNT; i++) {
         if(freqs[i] != 0) {
-            binary_node_create(freqs[i], i, NULL, NULL);
+            a = binary_node_create(freqs[i], i, NULL, NULL);
+            
+            if(a == NULL) {
+                /* todo došla paměť */
+            }
+            
+            pqueue_push(pq, a);
         }
     }
+    
+    /* stavba stromu */
+    while(pqueue_pop(pq, a) && pqueue_pop(pq, b)) {
+        
+        a = binary_node_create(a->freq_sum + b->freq_sum, 0, a, b);
+        
+        if(a == NULL) {
+            /* todo došla paměť */
+        }
+        
+        pqueue_push(pq, a);
+    }
+    
+    return a;
 }
 
 /*návod k použití*/
