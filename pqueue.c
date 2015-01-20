@@ -1,5 +1,7 @@
-#include "pqueue.h"
+
 #include <stdlib.h>
+
+#include "pqueue.h"
 
 /* knihovna prioritní fronty */
 
