@@ -8,7 +8,7 @@
 #include "pqueue.h"
 #include "binary_tree.h"
 
-#define CHAR_COUNT CHAR_BIT * CHAR_BIT
+#define CHAR_COUNT (0x1 << CHAR_BIT)
 
 #define OPTION_COMPRESS_S "-c"
 #define OPTION_COMPRESS_L "--compress"
@@ -22,7 +22,7 @@ typedef struct {
 
 int analyze_file(FILE* file, unsigned char *freqs) {
     
-    unsigned int freqs_accurate[CHAR_COUNT], max_accurate_freq = 0;
+    unsigned int freqs_accurate[CHAR_COUNT] = {0}, max_accurate_freq = 0;
     int c = INT_MIN + 7, i;
     
     /*přesná frekvenční analýza*/
@@ -32,7 +32,7 @@ int analyze_file(FILE* file, unsigned char *freqs) {
     
     /*detekce prázdného souboru*/
     if(c == INT_MIN + 7) {
-        return 0;
+        return 0; //todo vymyslet jinak
     }
     
     /*zjištění nejvyššího výskytu*/
@@ -45,7 +45,7 @@ int analyze_file(FILE* file, unsigned char *freqs) {
     /*zmenšení datového typu se zachováním poměrných hodnot výskytu*/
     for (i = 0; i < CHAR_COUNT; i++) {
         if(freqs_accurate[i] > 0) {
-            freqs[i] = ceil(max_accurate_freq / (double)freqs_accurate[i] * UCHAR_MAX);
+            freqs[i] = ceil(UCHAR_MAX / (max_accurate_freq / (double)freqs_accurate[i]));
         }
     }
     

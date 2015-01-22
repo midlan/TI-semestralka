@@ -9,6 +9,7 @@
 pqueue* pqueue_create(int size, int (*comp)(const void*, const void *)) {
 
     if(comp == NULL) {
+        //todo tady neošetřovat ale ošetřit všude kde se na ní šahá
         return NULL;
     }
     
