@@ -1,6 +1,10 @@
 #ifndef BINARY_TREE_H
 #define	BINARY_TREE_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 typedef struct thebinary_node {
     int freq_sum;
     char c;
@@ -18,4 +22,9 @@ int binary_node_comp(binary_node *a, binary_node *b);
 
 void destroy_binary_tree(binary_node **root);
 
+#ifdef	__cplusplus
+}
 #endif
+
+#endif	/* BINARY_TREE_H */
+

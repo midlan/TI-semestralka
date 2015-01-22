@@ -1,6 +1,10 @@
 #ifndef PQUEUE_H
 #define	PQUEUE_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #include "binary_tree.h"
 
 typedef binary_node pqdt;/* datový typ dat */
@@ -20,4 +24,10 @@ int pqueue_push(pqueue *pq, pqdt *item);
 
 int pqueue_pop(pqueue *pq, pqdt *item);
 
+
+#ifdef	__cplusplus
+}
 #endif
+
+#endif	/* PQUEUE_H */
+
