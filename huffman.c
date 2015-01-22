@@ -7,6 +7,7 @@
 
 #include "pqueue.h"
 #include "binary_tree.h"
+#include "safe_malloc.h"
 
 #define CHAR_COUNT (0x1 << CHAR_BIT)
 
@@ -14,6 +15,10 @@
 #define OPTION_COMPRESS_L "--compress"
 #define OPTION_DECOMPRESS_S "-d"
 #define OPTION_DECOMPRESS_L "--decompress"
+
+#define EXIT_OOM 2
+#define EXIT_INVALID_ARGS 3
+#define EXIT_IO_ERROR 4
 
 typedef struct {
     char bits;
@@ -66,7 +71,7 @@ int load_freqs(FILE* file, unsigned char *freqs) {
     
     alphabet_size++;
     
-    chars = malloc(alphabet_size * sizeof(char));
+    chars = safe_malloc(alphabet_size * sizeof(char));
     
     /*načtení znaků abecedy*/
     if(fread(chars, sizeof(char), alphabet_size, file)) {
@@ -85,7 +90,7 @@ int load_freqs(FILE* file, unsigned char *freqs) {
         rtn = 0;
     }
 
-    free(chars);
+    safe_free(chars);
     
     return rtn;
 }
@@ -109,12 +114,12 @@ binary_node *build_huffman_tree(unsigned char *freqs) {
                 /* todo došla paměť */
             }
             
-            pqueue_push(pq, a);
+            pqueue_push(pq, &a);
         }
     }
     
     /* stavba stromu */
-    while(pqueue_pop(pq, a) && pqueue_pop(pq, b)) {
+    while(pqueue_pop(pq, &a) && pqueue_pop(pq, &b)) {
         
         a = binary_node_create(a->freq_sum + b->freq_sum, 0, a, b);
         
@@ -122,14 +127,21 @@ binary_node *build_huffman_tree(unsigned char *freqs) {
             /* todo došla paměť */
         }
         
-        pqueue_push(pq, a);
+        pqueue_push(pq, &a);
     }
     
     return a;
 }
 
+void oom_exit() {
+    
+    puts("Not enough memory to complete the task.");
+    
+    return EXIT_OOM;
+}
+
 /*návod k použití*/
-int usage(char *command) {
+void usage(char *command) {
     
     printf(
         "Usage: %s options input_file output_file\n"
@@ -143,8 +155,6 @@ int usage(char *command) {
         "  output_file Output filename",
         command, OPTION_COMPRESS_S, OPTION_COMPRESS_L, OPTION_DECOMPRESS_S, OPTION_DECOMPRESS_L
     );
-    
-    return EXIT_FAILURE;
 }
 
 int main(int argc, char **argv) {
@@ -155,14 +165,15 @@ int main(int argc, char **argv) {
     
     /*kontrola vstupních parametrů*/
     if(argc < 4 || !(compress = !(strcmp(argv[1], OPTION_COMPRESS_S) && strcmp(argv[1], OPTION_COMPRESS_L))) && strcmp(argv[1], OPTION_DECOMPRESS_S) && strcmp(argv[1], OPTION_DECOMPRESS_S)) {
-        return usage(argv[0]);
+        usage(argv[0]);
+        return EXIT_INVALID_ARGS;
     }
     
     input = fopen(argv[2], "rb");
     
     if(input == NULL) {
         printf("The input file \"%s\" cannot be opened.");
-        return EXIT_FAILURE;
+        return EXIT_IO_ERROR;
     }
     
     if(compress) {

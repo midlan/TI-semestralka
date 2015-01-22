@@ -16,7 +16,7 @@ binary_node *binary_node_create(int freq_sum, char c, binary_node *left, binary_
 
 int binary_node_is_leaf(binary_node *node);
 
-void bindary_node_free(binary_node **node);
+void binary_node_free(binary_node **node);
 
 int binary_node_comp(binary_node *a, binary_node *b);
 

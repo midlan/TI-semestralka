@@ -2,32 +2,25 @@
 #include <stdlib.h>
 
 #include "pqueue.h"
+#include "safe_malloc.h"
 
 /* knihovna prioritní fronty */
 
 /* vytvoří prioritní frontu */
 pqueue* pqueue_create(int size, int (*comp)(const void*, const void *)) {
 
+    pqueue *pq;
+    
     if(comp == NULL) {
-        //todo tady neošetřovat ale ošetřit všude kde se na ní šahá
         return NULL;
     }
     
-    pqueue *pq = (pqueue*) malloc(sizeof (pqueue));
+    pq = (pqueue*) safe_malloc(sizeof (pqueue));
 
-    if (pq != NULL) {
-
-        pq->comp = comp;
-        pq->size = size;
-        pq->data = (pqdt*) malloc(pq->size * sizeof (pqdt));
-
-        if (pq->data == NULL) {
-            pqueue_free(&pq);
-            return NULL;
-        }
-
-        pq->top = -1;
-    }
+    pq->comp = comp;
+    pq->size = size;
+    pq->data = (pqdt*) safe_malloc(pq->size * sizeof (pqdt));
+    pq->top = -1;
 
     return pq;
 }
@@ -40,10 +33,10 @@ void pqueue_free(pqueue **pq) {
         if (*pq != NULL) {
 
             if ((*pq)->data != NULL) {
-                free((*pq)->data);
+                safe_free((*pq)->data);
             }
 
-            free(*pq);
+            safe_free(*pq);
             *pq = NULL;
         }
     }
@@ -57,14 +50,8 @@ int pqueue_push(pqueue *pq, pqdt *item) {
         /* zkontrolovat jestli nedošlo místo a případně zdvojnásobit úložiště */
         if (pq->top + 1 >= pq->size) {
 
-            int new_size = pq->size * 2;
-            pqdt *more_data = (pqdt*) realloc(pq->data, new_size * sizeof (pqdt));
-
-            if (more_data != NULL) {
-                pq->size = new_size;
-                pq->data = more_data;
-            } else
-                return 0;
+            pq->size *= 2;
+            pq->data = (pqdt*) safe_realloc(pq->data, pq->size * sizeof (pqdt));
         }
 
         pq->top++;

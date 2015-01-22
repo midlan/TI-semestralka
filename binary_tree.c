@@ -2,17 +2,16 @@
 #include <stdlib.h>
 
 #include "binary_tree.h"
+#include "safe_malloc.h"
 
 binary_node *binary_node_create(int freq_sum, char c, binary_node *left, binary_node *right) {
     
-    binary_node *node = malloc(sizeof(binary_node));
+    binary_node *node = safe_malloc(sizeof(binary_node));
     
-    if(node != NULL) {
-        node->freq_sum = freq_sum;
-        node->c = c;
-        node->left = left;
-        node->right = right;
-    }
+    node->freq_sum = freq_sum;
+    node->c = c;
+    node->left = left;
+    node->right = right;
     
     return node;
 }
@@ -26,12 +25,12 @@ int binary_node_is_leaf(binary_node *node) {
     return 0;
 }
 
-void bindary_node_free(binary_node **node) {
+void binary_node_free(binary_node **node) {
     
     if(node != NULL) {
         
         if(*node != NULL) {
-            free(*node);
+            safe_free(*node);
         }
         
         *node = NULL;
@@ -56,6 +55,6 @@ void destroy_binary_tree(binary_node **root) {
             destroy_binary_tree(&((*root)->right));
         }
         
-        bindary_node_free(root);
+        binary_node_free(root);
     }
 }
