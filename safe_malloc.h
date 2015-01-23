@@ -2,8 +2,6 @@
 #ifndef SAFE_MALLOC_H
 #define	SAFE_MALLOC_H
 
-#define EXIT_OOM 
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
