@@ -28,7 +28,7 @@ typedef struct {
 int analyze_file(FILE* file, unsigned char *freqs) {
     
     unsigned int freqs_accurate[CHAR_COUNT] = {0}, max_accurate_freq = 0;
-    int c = INT_MIN + 7, i;
+    int c, i;
     
     /*přesná frekvenční analýza*/
     while ((c = fgetc(file)) != EOF) {
@@ -36,8 +36,8 @@ int analyze_file(FILE* file, unsigned char *freqs) {
     }
     
     /*detekce prázdného souboru*/
-    if(c == INT_MIN + 7) {
-        return 0; //todo vymyslet jinak
+    if(ftell(file) > 0) {
+        return 0;
     }
     
     /*zjištění nejvyššího výskytu*/
@@ -101,18 +101,10 @@ binary_node *build_huffman_tree(unsigned char *freqs) {
     pqueue *pq = pqueue_create(CHAR_COUNT / 4, (int (*)(const void *, const void *))&binary_node_comp);
     binary_node *a, *b;
     
-    if(pq == NULL) {
-        /* todo došla paměť */
-    }
-    
     /*naplnění fronty*/
     for (i = 0; i < CHAR_COUNT; i++) {
         if(freqs[i] != 0) {
             a = binary_node_create(freqs[i], i, NULL, NULL);
-            
-            if(a == NULL) {
-                /* todo došla paměť */
-            }
             
             pqueue_push(pq, &a);
         }
@@ -122,10 +114,6 @@ binary_node *build_huffman_tree(unsigned char *freqs) {
     while(pqueue_pop(pq, &a) && pqueue_pop(pq, &b)) {
         
         a = binary_node_create(a->freq_sum + b->freq_sum, 0, a, b);
-        
-        if(a == NULL) {
-            /* todo došla paměť */
-        }
         
         pqueue_push(pq, &a);
     }
