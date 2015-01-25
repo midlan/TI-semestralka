@@ -25,7 +25,7 @@ typedef struct {
     int data;
 } huff_char;
 
-void analyze_file(FILE* file, unsigned char *freqs, long int* file_size) {
+void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char *freqs, long int* file_size) {
     
     unsigned int freqs_accurate[CHAR_COUNT] = {0}, max_accurate_freq = 0;
     int c, i;
@@ -49,16 +49,35 @@ void analyze_file(FILE* file, unsigned char *freqs, long int* file_size) {
         for (i = 0; i < CHAR_COUNT; i++) {
             if(freqs_accurate[i] > 0) {
                 freqs[i] = ceil(UCHAR_MAX / (max_accurate_freq / (double)freqs_accurate[i]));
+                (*alphabet_size)++;
             }
         }
     }
 }
 
+int write_header(FILE* file, unsigned char alphabet_size, unsigned char *freqs, long int file_size) {
+
+    int i;
+    
+    fwrite(&alphabet_size, sizeof(unsigned char), 1, file);
+    
+    for (i = 0; i < CHAR_COUNT; i++) {
+        if(freqs[i] > 0) {
+            fwrite(&((char)i), sizeof(char), 1, file); /*znak*/
+            fwrite(freqs + i, sizeof(unsigned char), 1, file); /*četnost*/
+        }
+    }
+    
+    fwrite(&file_size, sizeof(long int), 1 file);
+    
+    return 1;
+}
+
 /*načtení četností z komprimovaného souboru*/
-int load_freqs(FILE* file, unsigned char* freqs, long int* file_size) {
+int load_header(FILE* file, unsigned char* freqs, long int* file_size) {
     
     char *chars;
-    unsigned int alphabet_size;
+    unsigned char i, alphabet_size;
     int rtn = 1;
     
     /*načtení počtu znaků v abecedě*/
@@ -66,28 +85,19 @@ int load_freqs(FILE* file, unsigned char* freqs, long int* file_size) {
         return 0;
     }
     
-    alphabet_size++;
+    chars = safe_malloc((alphabet_size + 1) * sizeof(char));
     
-    chars = safe_malloc(alphabet_size * sizeof(char));
-    
-    /*načtení znaků abecedy*/
-    if(fread(chars, sizeof(char), alphabet_size, file)) {
-        
-        int i;
-        
-        /*načtení četností*/
-        for (i = 0; i < alphabet_size; i++) {
-            if(!fread(freqs + chars[i], sizeof(unsigned char), 1, file)) { 
-                rtn = 0;
-                break;
-            }
+    /*načtení tabulky četností*/
+    for (i = 0; i <= alphabet_size; i++) {
+        if(!(fread(freqs + i, sizeof(char), 1, file) && fread(freqs + chars[i], sizeof(unsigned char), 1, file))) { 
+            rtn = 0;
+            break;
         }
-        
+    }
+    
+    if(rtn) {
         /*načtení velikosti nezkomprimovaného souboru*/
         rtn = fread(file_size, sizeof(*file_size), 1, file);
-    }
-    else {
-        rtn = 0;
     }
 
     safe_free(chars);
@@ -164,7 +174,7 @@ int main(int argc, char **argv) {
     
     int compress;
     FILE* input, output;
-    unsigned char freqs[CHAR_COUNT] = {0};
+    unsigned char freqs[CHAR_COUNT] = {0}, alphabet_size;
     long int file_size;
     
     /*kontrola vstupních parametrů*/
@@ -182,7 +192,7 @@ int main(int argc, char **argv) {
     
     if(compress) {
         
-        analyze_file(input, freqs, &file_size);
+        analyze_file(input, &alphabet_size, freqs, &file_size);
         
         if(file_size <= 0) {
             puts("Empty file cannot be compressed.");
@@ -191,7 +201,7 @@ int main(int argc, char **argv) {
         
     }
     else {
-        if(!load_freqs(input, freqs, &file_size)) {
+        if(!load_header(input, freqs, &file_size)) {
             printf("Supplied file for decompress is corrupt.");
             return EXIT_IO_ERROR;
         }
