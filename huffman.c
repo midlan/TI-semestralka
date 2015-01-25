@@ -21,9 +21,9 @@
 #define EXIT_IO_ERROR 4
 
 typedef struct {
-    char bits;
+    unsigned char bits;
     int data;
-} compressed_char;
+} huff_char;
 
 void analyze_file(FILE* file, unsigned char *freqs, long int* file_size) {
     
@@ -95,6 +95,23 @@ int load_freqs(FILE* file, unsigned char* freqs, long int* file_size) {
     return rtn;
 }
 
+void bintree2huffcodes(binary_node *tree, huff_char *huff_codes, huff_char code) {
+    
+    if(binary_node_is_leaf(tree)) {
+        huff_codes[tree->c] = code;
+    }
+    else {
+        code.bits++;
+        code.data <<= 0x1;
+        
+        bintree2huffcodes(tree->left, huff_codes, code);
+        
+        code.data |= 0x1;
+        
+        bintree2huffcodes(tree->right, huff_codes, code);
+    }
+}
+
 binary_node *build_huffman_tree(unsigned char *freqs) {
     
     int i;
@@ -124,8 +141,6 @@ binary_node *build_huffman_tree(unsigned char *freqs) {
 void oom_exit() {
     
     puts("Not enough memory to complete the task.");
-    
-    return EXIT_OOM;
 }
 
 /*návod k použití*/
@@ -166,7 +181,6 @@ int main(int argc, char **argv) {
     }
     
     if(compress) {
-        compressed_char *huff_codes[CHAR_COUNT] = {NULL};
         
         analyze_file(input, freqs, &file_size);
         
@@ -185,6 +199,18 @@ int main(int argc, char **argv) {
     
     binary_node *tree = build_huffman_tree(freqs);
     
+    
+    if(compress) {
+        
+        huff_char huff_codes[CHAR_COUNT], initial;
+        
+        initial.bits = 0;
+        initial.data = 0x0;
+        
+        bintree2huffcodes(tree, huff_codes, initial);
+        
+        printf("%d", compress);
+    }
     
     
     printf("%d", compress);
