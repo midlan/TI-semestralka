@@ -80,7 +80,7 @@ int write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs, 
 }
 
 /*načtení četností z komprimovaného souboru*/
-int load_header(FILE* file, unsigned char* freqs, long int* file_size) {
+int read_header(FILE* file, unsigned char* freqs, long int* file_size) {
     
     char *chars;
     unsigned char i, alphabet_size;
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
         
     }
     else {
-        if(!load_header(input, freqs, &file_size)) {
+        if(!read_header(input, freqs, &file_size)) {
             printf("Supplied file for decompress is corrupt.");
             return EXIT_IO_ERROR;
         }
