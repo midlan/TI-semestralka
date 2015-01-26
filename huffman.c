@@ -182,7 +182,7 @@ void usage(char* command) {
 int main(int argc, char** argv) {
     
     int compress;
-    FILE* input, output;
+    FILE *input, *output;
     unsigned char freqs[CHAR_COUNT] = {0}, alphabet_size;
     long int file_size;
     
@@ -193,9 +193,15 @@ int main(int argc, char** argv) {
     }
     
     input = fopen(argv[2], "rb");
+    output = fopen(argv[3], "wb");
     
     if(input == NULL) {
         printf("The input file \"%s\" cannot be opened.", argv[2]);
+        early_exit(EXIT_IO_ERROR);
+    }
+    
+    if(output == NULL) {
+        printf("The output file \"%s\" cannot be opened.", argv[3]);
         early_exit(EXIT_IO_ERROR);
     }
     
