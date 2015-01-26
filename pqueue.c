@@ -7,7 +7,7 @@
 /* knihovna prioritní fronty */
 
 /* vytvoří prioritní frontu */
-pqueue* pqueue_create(int size, int (*comp)(const void*, const void *)) {
+pqueue* pqueue_create(int size, int (*comp)(pqdt*, pqdt*)) {
 
     pqueue *pq;
     
@@ -26,7 +26,7 @@ pqueue* pqueue_create(int size, int (*comp)(const void*, const void *)) {
 }
 
 /* zničí prioritní frontu */
-void pqueue_free(pqueue **pq) {
+void pqueue_free(pqueue** pq) {
     
     if(pq != NULL) {
 
@@ -43,7 +43,7 @@ void pqueue_free(pqueue **pq) {
 }
 
 /* přidá prvek do prioritní fronty */
-int pqueue_push(pqueue *pq, pqdt *item) {
+int pqueue_push(pqueue* pq, pqdt* item) {
 
     if (pq != NULL && item != NULL) {
 
@@ -66,7 +66,7 @@ int pqueue_push(pqueue *pq, pqdt *item) {
 }
 
 /* odebere prvek s nejvyšší prioritou, případně překopíruje prvek na pointer */
-int pqueue_pop(pqueue *pq, pqdt *item) {
+int pqueue_pop(pqueue* pq, pqdt* item) {
 
     if (pq != NULL && pq->top >= 0) {
         
@@ -75,6 +75,7 @@ int pqueue_pop(pqueue *pq, pqdt *item) {
         
         /* nalezení prvku s nejvyšší prioritou */
         for(i = 1; i <= pq->top; i++) {
+            int asd = pq->comp(pq->data + i, max);
             if(pq->comp(pq->data + i, max) < 0) {
                 max = pq->data + i;
             }

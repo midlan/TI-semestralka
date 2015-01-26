@@ -25,10 +25,12 @@ typedef struct {
     int data;
 } huff_char;
 
-void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char *freqs, long int* file_size) {
+void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char* freqs, long int* file_size) {
     
     unsigned int freqs_accurate[CHAR_COUNT] = {0}, max_accurate_freq = 0;
     int c, i;
+    
+    *alphabet_size = 0;
     
     /*přesná frekvenční analýza*/
     while ((c = fgetc(file)) != EOF) {
@@ -53,9 +55,13 @@ void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char *freqs
             }
         }
     }
+    
+    if(*alphabet_size) {
+        (*alphabet_size)--;
+    }
 }
 
-int write_header(FILE* file, unsigned char alphabet_size, unsigned char *freqs, long int file_size) {
+int write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs, long int file_size) {
 
     int i;
     
@@ -63,12 +69,12 @@ int write_header(FILE* file, unsigned char alphabet_size, unsigned char *freqs, 
     
     for (i = 0; i < CHAR_COUNT; i++) {
         if(freqs[i] > 0) {
-            fwrite(&((char)i), sizeof(char), 1, file); /*znak*/
+            fwrite(&i, sizeof(char), 1, file); /*znak*/
             fwrite(freqs + i, sizeof(unsigned char), 1, file); /*četnost*/
         }
     }
     
-    fwrite(&file_size, sizeof(long int), 1 file);
+    fwrite(&file_size, sizeof(long int), 1, file);
     
     return 1;
 }
@@ -105,7 +111,7 @@ int load_header(FILE* file, unsigned char* freqs, long int* file_size) {
     return rtn;
 }
 
-void bintree2huffcodes(binary_node *tree, huff_char *huff_codes, huff_char code) {
+void bintree2huffcodes(binary_node* tree, huff_char* huff_codes, huff_char code) {
     
     if(binary_node_is_leaf(tree)) {
         huff_codes[tree->c] = code;
@@ -122,17 +128,16 @@ void bintree2huffcodes(binary_node *tree, huff_char *huff_codes, huff_char code)
     }
 }
 
-binary_node *build_huffman_tree(unsigned char *freqs) {
+binary_node* build_huffman_tree(unsigned char* freqs) {
     
     int i;
-    pqueue *pq = pqueue_create(CHAR_COUNT / 4, (int (*)(const void *, const void *))&binary_node_comp);
+    pqueue *pq = pqueue_create(CHAR_COUNT / 4, &binary_node_comp);
     binary_node *a, *b;
     
     /*naplnění fronty*/
     for (i = 0; i < CHAR_COUNT; i++) {
-        if(freqs[i] != 0) {
+        if(freqs[i] > 0) {
             a = binary_node_create(freqs[i], i, NULL, NULL);
-            
             pqueue_push(pq, &a);
         }
     }
@@ -154,7 +159,7 @@ void oom_exit() {
 }
 
 /*návod k použití*/
-void usage(char *command) {
+void usage(char* command) {
     
     printf(
         "Usage: %s options input_file output_file\n"
@@ -170,7 +175,7 @@ void usage(char *command) {
     );
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     
     int compress;
     FILE* input, output;

@@ -12,17 +12,17 @@ typedef binary_node* pqdt;/* datový typ dat */
 typedef struct {
   int top;
   int size;
-  int (*comp)(const void*, const void *);
-  pqdt *data;
+  int (*comp)(pqdt*, pqdt*);
+  pqdt* data;
 } pqueue;
 
-pqueue* pqueue_create(int size, int (*comp)(const void*, const void *));
+pqueue* pqueue_create(int size, int (*comp)(pqdt*, pqdt*));
 
-void pqueue_free(pqueue **pq);
+void pqueue_free(pqueue** pq);
 
-int pqueue_push(pqueue *pq, pqdt *item);
+int pqueue_push(pqueue* pq, pqdt* item);
 
-int pqueue_pop(pqueue *pq, pqdt *item);
+int pqueue_pop(pqueue* pq, pqdt* item);
 
 
 #ifdef	__cplusplus

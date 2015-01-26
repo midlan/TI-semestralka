@@ -4,7 +4,7 @@
 #include "binary_tree.h"
 #include "safe_malloc.h"
 
-binary_node *binary_node_create(int freq_sum, char c, binary_node *left, binary_node *right) {
+binary_node* binary_node_create(unsigned int freq_sum, char c, binary_node* left, binary_node* right) {
     
     binary_node *node = safe_malloc(sizeof(binary_node));
     
@@ -16,7 +16,7 @@ binary_node *binary_node_create(int freq_sum, char c, binary_node *left, binary_
     return node;
 }
 
-int binary_node_is_leaf(binary_node *node) {
+int binary_node_is_leaf(binary_node* node) {
     
     if(node != NULL) {
         return node->right == NULL && node->left == NULL;
@@ -25,7 +25,7 @@ int binary_node_is_leaf(binary_node *node) {
     return 0;
 }
 
-void binary_node_free(binary_node **node) {
+void binary_node_free(binary_node** node) {
     
     if(node != NULL) {
         
@@ -37,16 +37,16 @@ void binary_node_free(binary_node **node) {
     }
 }
 
-int binary_node_comp(binary_node *a, binary_node *b) {
+int binary_node_comp(binary_node** a, binary_node** b) {
     
     if(a != NULL && b != NULL) {
-        return a->freq_sum - b->freq_sum;
+        return (int)((*a)->freq_sum - (*b)->freq_sum);
     }
     
     return 0;
 }
 
-void destroy_binary_tree(binary_node **root) {
+void destroy_binary_tree(binary_node** root) {
     
     if(root != NULL) {
         
