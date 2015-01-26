@@ -61,7 +61,7 @@ void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char* freqs
     }
 }
 
-int write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs, long int file_size) {
+void write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs, long int file_size) {
 
     int i;
     
@@ -75,40 +75,29 @@ int write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs, 
     }
     
     fwrite(&file_size, sizeof(long int), 1, file);
-    
-    return 1;
 }
 
 /*načtení četností z komprimovaného souboru*/
-int read_header(FILE* file, unsigned char* freqs, long int* file_size) {
+void read_header(FILE* file, unsigned char* freqs, long int* file_size) {
     
     char *chars;
     unsigned char i, alphabet_size;
-    int rtn = 1;
     
     /*načtení počtu znaků v abecedě*/
-    if(!fread(&alphabet_size, sizeof(unsigned char), CHAR_COUNT, file)) {
-        return 0;
-    }
+    fread(&alphabet_size, sizeof(unsigned char), CHAR_COUNT, file);
     
     chars = safe_malloc((alphabet_size + 1) * sizeof(char));
     
     /*načtení tabulky četností*/
     for (i = 0; i <= alphabet_size; i++) {
-        if(!(fread(freqs + i, sizeof(char), 1, file) && fread(freqs + chars[i], sizeof(unsigned char), 1, file))) { 
-            rtn = 0;
-            break;
-        }
+        fread(freqs + i, sizeof(char), 1, file); /*znak*/
+        fread(freqs + chars[i], sizeof(unsigned char), 1, file); /*četnost*/
     }
     
-    if(rtn) {
-        /*načtení velikosti nezkomprimovaného souboru*/
-        rtn = fread(file_size, sizeof(*file_size), 1, file);
-    }
+    /*načtení velikosti původního souboru*/
+    fread(file_size, sizeof(*file_size), 1, file);
 
     safe_free(chars);
-    
-    return rtn;
 }
 
 void bintree2huffcodes(binary_node* tree, huff_char* huff_codes, huff_char code) {
@@ -154,8 +143,23 @@ binary_node* build_huffman_tree(unsigned char* freqs) {
 }
 
 void oom_exit() {
-    
     puts("Not enough memory to complete the task.");
+    early_exit(EXIT_OOM);
+}
+
+void early_exit(int code) {
+    free_remaining();
+    exit(code);
+}
+
+void inputf_error() {
+    puts("Error occured while reading input file.");
+    early_exit(EXIT_IO_ERROR);
+}
+
+void outputf_error() {
+    puts("Error occured while writing into output file.");
+    early_exit(EXIT_IO_ERROR);
 }
 
 /*návod k použití*/
@@ -191,30 +195,35 @@ int main(int argc, char** argv) {
     input = fopen(argv[2], "rb");
     
     if(input == NULL) {
-        printf("The input file \"%s\" cannot be opened.");
-        return EXIT_IO_ERROR;
+        printf("The input file \"%s\" cannot be opened.", argv[2]);
+        early_exit(EXIT_IO_ERROR);
     }
     
     if(compress) {
         
         analyze_file(input, &alphabet_size, freqs, &file_size);
         
-        if(file_size <= 0) {
+        if(ferror(input)) {
+            inputf_error();
+        }
+        else if(file_size <= 0) {
             puts("Empty file cannot be compressed.");
-            return EXIT_IO_ERROR;
+            early_exit(EXIT_IO_ERROR);
         }
         
     }
     else {
-        if(!read_header(input, freqs, &file_size)) {
-            printf("Supplied file for decompress is corrupt.");
-            return EXIT_IO_ERROR;
+        
+        read_header(input, freqs, &file_size);
+        
+        if(ferror(input)) {
+            inputf_error();
         }
     }
     
     binary_node *tree = build_huffman_tree(freqs);
     
-    
+
     if(compress) {
         
         huff_char huff_codes[CHAR_COUNT], initial;
@@ -224,7 +233,17 @@ int main(int argc, char** argv) {
         
         bintree2huffcodes(tree, huff_codes, initial);
         
+        write_header(output, alphabet_size, freqs, file_size);
+//        write_compressed(input, output, huff_codes);
+        
+        if(ferror(output)) {
+            outputf_error();
+        }
+        
         printf("%d", compress);
+    }
+    else {
+//        write_decompressed(input, output, tree);
     }
     
     
