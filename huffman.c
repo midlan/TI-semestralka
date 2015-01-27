@@ -116,10 +116,10 @@ write_decompressed(FILE* input, FILE* output, binary_node* tree, long int file_s
     binary_node* node = tree;
     
     /*načtení bloku zkomprimovaného souboru*/
-    while(fread(&buffer), sizeof(buffer), 1, input) {
+    while(fread(&buffer, sizeof(buffer), 1, input)) {
         
         /*jedničku na nejvyšší bit masky*/
-        mask = 0x1 << (sizeof(mask) * CHAR_BIT);
+        mask = 0x1 << (sizeof(mask) * CHAR_BIT - 1);
         
         while(mask) {
             
