@@ -10,7 +10,6 @@
 #include "safe_malloc.h"
 
 #define CHAR_COUNT (0x1 << CHAR_BIT)
-#define INT_BIT (sizeof(int) * CHAR_BIT)
 
 #define OPTION_COMPRESS_S "-c"
 #define OPTION_COMPRESS_L "--compress"
@@ -82,7 +81,7 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
     
     int c;
     unsigned int buffer = 0x0;
-    unsigned char free_bits = INT_BIT, data_bits;
+    unsigned char free_bits = sizeof(free_bits) * CHAR_BIT, data_bits;
     char shl;
     
     while ((c = fgetc(input)) != EOF) {
@@ -99,13 +98,50 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
             
             fwrite(&buffer, sizeof(buffer), 1, output);
             buffer = 0x0;
-            free_bits = INT_BIT;
+            free_bits = sizeof(free_bits) * CHAR_BIT;
             
             /*buffer přetekl, doplnit přetečená data*/
             if(shl < 0) {
                 free_bits += shl;
                 buffer |= huff_codes[(char)c].data << free_bits;
             }
+        }
+    }
+}
+
+write_decompressed(FILE* input, FILE* output, binary_node* tree, long int file_size) {
+    
+    unsigned int buffer, mask;
+    long int decompressed = 0;
+    binary_node* node = tree;
+    
+    /*načtení bloku zkomprimovaného souboru*/
+    while(fread(&buffer), sizeof(buffer), 1, input) {
+        
+        /*jedničku na nejvyšší bit masky*/
+        mask = 0x1 << (sizeof(mask) * CHAR_BIT);
+        
+        while(mask) {
+            
+            /*sestup stromem*/
+            node = buffer & mask ? node->right : node->left;
+            
+            /*zápis znaku z listu*/
+            if(binary_node_is_leaf(node)) {
+                
+                fwrite(&(node->c), sizeof(node->c), 1, output);
+                decompressed++;
+                
+                /*původní soubor byl kompletně zrekonstruován, dekomprese končí*/
+                if(decompressed >= file_size) {
+                    return;
+                }
+                
+                node = tree;
+            }
+            
+            /*posun maskovacího bitu po jednom doprava*/
+            mask >>= 1;
         }
     }
 }
@@ -276,19 +312,22 @@ int main(int argc, char** argv) {
         
         write_header(output, alphabet_size, freqs, file_size);
         write_compressed(input, output, huff_codes);
-        
-        if(ferror(output)) {
-            outputf_error();
-        }
-        
-        printf("%d", compress);
     }
     else {
-//        write_decompressed(input, output, tree);
+        write_decompressed(input, output, tree, file_size);
     }
     
+    if(ferror(input)) {
+        inputf_error();
+    }
     
-    printf("%d", compress);
+    if(ferror(output)) {
+        outputf_error();
+    }
+    
+    /*zavření souborů*/
+    fclose(input);
+    fclose(output);
     
     return EXIT_SUCCESS;
 }
