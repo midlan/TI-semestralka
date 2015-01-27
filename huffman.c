@@ -208,6 +208,8 @@ binary_node* build_huffman_tree(unsigned char* freqs) {
         pqueue_push(pq, &a);
     }
     
+    pqueue_free(&pq);
+    
     return a;
 }
 
@@ -316,6 +318,8 @@ int main(int argc, char** argv) {
     else {
         write_decompressed(input, output, tree, file_size);
     }
+    
+    binary_node_free_tree(&tree);
     
     if(ferror(input)) {
         inputf_error();

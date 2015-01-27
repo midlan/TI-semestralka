@@ -20,7 +20,7 @@ void binary_node_free(binary_node** node);
 
 int binary_node_comp(binary_node** a, binary_node** b);
 
-void destroy_binary_tree(binary_node** root);
+void binary_node_free_tree(binary_node** root);
 
 #ifdef	__cplusplus
 }

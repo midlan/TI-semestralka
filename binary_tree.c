@@ -46,13 +46,13 @@ int binary_node_comp(binary_node** a, binary_node** b) {
     return 0;
 }
 
-void destroy_binary_tree(binary_node** root) {
+void binary_node_free_tree(binary_node** root) {
     
     if(root != NULL) {
         
         if(*root != NULL) {
-            destroy_binary_tree(&((*root)->left));
-            destroy_binary_tree(&((*root)->right));
+            binary_node_free_tree(&((*root)->left));
+            binary_node_free_tree(&((*root)->right));
         }
         
         binary_node_free(root);
