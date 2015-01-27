@@ -10,6 +10,7 @@
 #include "safe_malloc.h"
 
 #define CHAR_COUNT (0x1 << CHAR_BIT)
+#define INT_BIT (sizeof(int) * CHAR_BIT)
 
 #define OPTION_COMPRESS_S "-c"
 #define OPTION_COMPRESS_L "--compress"
@@ -22,7 +23,7 @@
 
 typedef struct {
     unsigned char bits;
-    int data;
+    unsigned int data;
 } huff_char;
 
 void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char* freqs, long int* file_size) {
@@ -77,6 +78,38 @@ void write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs,
     fwrite(&file_size, sizeof(long int), 1, file);
 }
 
+void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
+    
+    int c;
+    unsigned int buffer = 0x0;
+    unsigned char free_bits = INT_BIT, data_bits;
+    char shl;
+    
+    while ((c = fgetc(input)) != EOF) {
+        
+        data_bits = huff_codes[(char)c].bits;
+        
+        shl = free_bits - data_bits; //todo nevejde se
+        
+        buffer |= huff_codes[(char)c].data << (shl < 0 ? free_bits : shl);
+        free_bits -= data_bits > free_bits ? free_bits : data_bits;
+        
+        /*buffer je plný*/
+        if(free_bits == 0) {
+            
+            fwrite(&buffer, sizeof(buffer), 1, output);
+            buffer = 0x0;
+            free_bits = INT_BIT;
+            
+            /*buffer přetekl, doplnit přetečená data*/
+            if(shl < 0) {
+                free_bits += shl;
+                buffer |= huff_codes[(char)c].data << free_bits;
+            }
+        }
+    }
+}
+
 /*načtení četností z komprimovaného souboru*/
 void read_header(FILE* file, unsigned char* freqs, long int* file_size) {
     
@@ -107,7 +140,7 @@ void bintree2huffcodes(binary_node* tree, huff_char* huff_codes, huff_char code)
     }
     else {
         code.bits++;
-        code.data <<= 0x1;
+        code.data <<= 1;
         
         bintree2huffcodes(tree->left, huff_codes, code);
         
@@ -142,14 +175,14 @@ binary_node* build_huffman_tree(unsigned char* freqs) {
     return a;
 }
 
-void oom_exit() {
-    puts("Not enough memory to complete the task.");
-    early_exit(EXIT_OOM);
-}
-
 void early_exit(int code) {
     free_remaining();
     exit(code);
+}
+
+void oom_exit() {
+    puts("Not enough memory to complete the task.");
+    early_exit(EXIT_OOM);
 }
 
 void inputf_error() {
@@ -239,8 +272,10 @@ int main(int argc, char** argv) {
         
         bintree2huffcodes(tree, huff_codes, initial);
         
+        rewind(input);
+        
         write_header(output, alphabet_size, freqs, file_size);
-//        write_compressed(input, output, huff_codes);
+        write_compressed(input, output, huff_codes);
         
         if(ferror(output)) {
             outputf_error();
