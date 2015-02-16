@@ -81,7 +81,7 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
     
     int c;
     unsigned int buffer = 0x0;
-    unsigned char free_bits = sizeof(free_bits) * CHAR_BIT, data_bits;
+    unsigned char free_bits = sizeof(buffer) * CHAR_BIT, data_bits;
     char shl;
     
     while ((c = fgetc(input)) != EOF) {
@@ -98,7 +98,7 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
             
             fwrite(&buffer, sizeof(buffer), 1, output);
             buffer = 0x0;
-            free_bits = sizeof(free_bits) * CHAR_BIT;
+            free_bits = sizeof(buffer) * CHAR_BIT;
             
             /*buffer přetekl, doplnit přetečená data*/
             if(shl < 0) {
@@ -106,6 +106,11 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
                 buffer |= huff_codes[(char)c].data << free_bits;
             }
         }
+    }
+    
+    /*zapsání zbývajících dat z bufferu*/
+    if(free_bits < sizeof(buffer) * CHAR_BIT) {
+        fwrite(&buffer, sizeof(buffer), 1, output);
     }
 }
 
