@@ -88,7 +88,7 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
         
         data_bits = huff_codes[(char)c].bits;
         
-        shl = free_bits - data_bits; //todo nevejde se
+        shl = free_bits - data_bits;
         
         buffer |= huff_codes[(char)c].data << (shl < 0 ? free_bits : shl);
         free_bits -= data_bits > free_bits ? free_bits : data_bits;
