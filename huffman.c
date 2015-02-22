@@ -242,7 +242,7 @@ void outputf_error() {
 void usage(char* command) {
     
     printf(
-        "Usage: %s options input_file output_file\n"
+        "Usage: %s options input_file output_file\n\n"
         "Compress or decompress file using huffman coding.\n\n"
         "  options:\n"
         "      %s %s\n"
@@ -250,7 +250,7 @@ void usage(char* command) {
         "      %s %s\n"
         "          Input file will be decompressed\n\n"
         "  input_file Input filename\n\n"
-        "  output_file Output filename",
+        "  output_file Output filename\n",
         command, OPTION_COMPRESS_S, OPTION_COMPRESS_L, OPTION_DECOMPRESS_S, OPTION_DECOMPRESS_L
     );
 }
