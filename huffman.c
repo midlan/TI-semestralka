@@ -154,24 +154,22 @@ write_decompressed(FILE* input, FILE* output, binary_node* tree, long int file_s
 /*načtení četností z komprimovaného souboru*/
 void read_header(FILE* file, unsigned char* freqs, long int* file_size) {
     
-    char *chars;
+    char tmp;
     unsigned char i, alphabet_size;
     
     /*načtení počtu znaků v abecedě*/
-    fread(&alphabet_size, sizeof(unsigned char), CHAR_COUNT, file);
+    fread(&alphabet_size, sizeof(unsigned char), 1, file);
     
-    chars = safe_malloc((alphabet_size + 1) * sizeof(char));
+    alphabet_size = alphabet_size;
     
     /*načtení tabulky četností*/
     for (i = 0; i <= alphabet_size; i++) {
-        fread(freqs + i, sizeof(char), 1, file); /*znak*/
-        fread(freqs + chars[i], sizeof(unsigned char), 1, file); /*četnost*/
+        fread(&tmp, sizeof(char), 1, file); /*znak*/
+        fread(freqs + tmp, sizeof(unsigned char), 1, file); /*četnost*/
     }
     
     /*načtení velikosti původního souboru*/
     fread(file_size, sizeof(*file_size), 1, file);
-
-    safe_free(chars);
 }
 
 void bintree2huffcodes(binary_node* tree, huff_char* huff_codes, huff_char code) {
