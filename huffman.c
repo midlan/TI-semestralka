@@ -34,7 +34,7 @@ void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char* freqs
     
     /*přesná frekvenční analýza*/
     while ((c = fgetc(file)) != EOF) {
-        freqs_accurate[(char)c]++;
+        freqs_accurate[(unsigned char)c]++;
     }
         
     /*analyzovat jen neprázdné soubory*/
@@ -51,12 +51,11 @@ void analyze_file(FILE* file, unsigned char* alphabet_size, unsigned char* freqs
         for (i = 0; i < CHAR_COUNT; i++) {
             if(freqs_accurate[i] > 0) {
                 freqs[i] = ceil(UCHAR_MAX / (max_accurate_freq / (double)freqs_accurate[i]));
+                unsigned char asd = freqs[i];
                 (*alphabet_size)++;
             }
         }
-    }
-    
-    if(*alphabet_size) {
+        
         (*alphabet_size)--;
     }
 }
@@ -65,7 +64,7 @@ void write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs,
 
     int i;
     
-    fwrite(&alphabet_size, sizeof(unsigned char), 1, file);
+    fwrite(&alphabet_size, sizeof(alphabet_size), 1, file);
     
     for (i = 0; i < CHAR_COUNT; i++) {
         if(freqs[i] > 0) {
@@ -77,21 +76,26 @@ void write_header(FILE* file, unsigned char alphabet_size, unsigned char* freqs,
     fwrite(&file_size, sizeof(long int), 1, file);
 }
 
+unsigned int shift(unsigned int operand, char bits) {
+    return bits >= 0 ? operand << bits : operand >> -bits;
+}
+
 void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
     
     int c;
     unsigned int buffer = 0x0;
-    unsigned char free_bits = sizeof(buffer) * CHAR_BIT, data_bits;
+    unsigned char free_bits = sizeof(buffer) * CHAR_BIT;
     char shl;
+    huff_char* code;
     
     while ((c = fgetc(input)) != EOF) {
         
-        data_bits = huff_codes[(char)c].bits;
+        code = &huff_codes[(unsigned char)c];
         
-        shl = free_bits - data_bits;
+        shl = free_bits - code->bits;
         
-        buffer |= huff_codes[(char)c].data << (shl < 0 ? free_bits : shl);
-        free_bits -= data_bits > free_bits ? free_bits : data_bits;
+        buffer |= shift(code->data, shl);
+        free_bits -= code->bits > free_bits ? free_bits : code->bits;
         
         /*buffer je plný*/
         if(free_bits == 0) {
@@ -103,7 +107,7 @@ void write_compressed(FILE* input, FILE* output, huff_char* huff_codes) {
             /*buffer přetekl, doplnit přetečená data*/
             if(shl < 0) {
                 free_bits += shl;
-                buffer |= huff_codes[(char)c].data << free_bits;
+                buffer |= code->data << free_bits;
             }
         }
     }
@@ -154,18 +158,17 @@ write_decompressed(FILE* input, FILE* output, binary_node* tree, long int file_s
 /*načtení četností z komprimovaného souboru*/
 void read_header(FILE* file, unsigned char* freqs, long int* file_size) {
     
-    char tmp;
-    unsigned char i, alphabet_size;
+    unsigned char tmp, i, alphabet_size;
     
     /*načtení počtu znaků v abecedě*/
-    fread(&alphabet_size, sizeof(unsigned char), 1, file);
+    fread(&alphabet_size, sizeof(alphabet_size), 1, file);
     
     alphabet_size = alphabet_size;
     
     /*načtení tabulky četností*/
     for (i = 0; i <= alphabet_size; i++) {
-        fread(&tmp, sizeof(char), 1, file); /*znak*/
-        fread(freqs + tmp, sizeof(unsigned char), 1, file); /*četnost*/
+        fread(&tmp, sizeof(tmp), 1, file); /*znak*/
+        fread(&freqs[tmp], sizeof(*freqs), 1, file); /*četnost*/
     }
     
     /*načtení velikosti původního souboru*/
@@ -175,7 +178,7 @@ void read_header(FILE* file, unsigned char* freqs, long int* file_size) {
 void bintree2huffcodes(binary_node* tree, huff_char* huff_codes, huff_char code) {
     
     if(binary_node_is_leaf(tree)) {
-        huff_codes[tree->c] = code;
+        huff_codes[(unsigned char)tree->c] = code;
     }
     else {
         code.bits++;
